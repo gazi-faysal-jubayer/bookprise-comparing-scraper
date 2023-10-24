@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from bs4 import BeautifulSoup
 import requests
+import time
 
 app = Flask(__name__)
 
@@ -41,7 +42,11 @@ def search():
         wafi_link_list.append(link.a['href'])
 
     for i in range(len(book_name_list)):
-        rokomari = requests.get(f'https://www.rokomari.com/search?term={book_name_list[i]}&search_type=ALL').text
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+        }
+        rokomari = requests.get(f'https://www.rokomari.com/search?term={book_name_list[i]}&search_type=ALL', headers=headers).text
+        time.sleep(5)
         soupR = BeautifulSoup(rokomari, 'lxml')
         rBooks = soupR.find_all('div', class_='book-list-wrapper')
         rWritters = soupR.find_all('p', class_='book-author')
