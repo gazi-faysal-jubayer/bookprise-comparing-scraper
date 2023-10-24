@@ -32,6 +32,7 @@
             <strong>Price in Rokomari:</strong>
             {% if r['Rokomari Link'] != 'Not available' %}
                 {{ r['Price in Rokomari'] }}
+            {% if r['Rokomari Link'] != 'Not available' %}
                 <a href="{{ r['Rokomari Link'] }}" class="btn btn-secondary btn-sm" target="_blank">Buy from Rokomari</a>
             {% else %}
                 Not available
