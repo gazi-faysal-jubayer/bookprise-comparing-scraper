@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Search Results</h1>
+        <button onclick="window.location.href='/'" class="btn btn-primary mb-5">Back to Search</button>
+
+        <div class="row">
+            {% for r in results %}
+            <div class="col-md-4 mb-4">
+             <div class="card">
+    <img class="card-img-top" src="{{ r['Image'] }}" alt="Book Image">
+    <div class="card-body">
+        <h5 class="card-title">{{ r['Book name'] }}</h5>
+        <p class="card-text"><strong>Writer:</strong> {{ r['Writer'] }}</p>
+        <p class="card-text"><strong>Price in WifiLife:</strong> {{ r['Price in WifiLife'] }}</p>
+    </div>
+    <div class="card-footer">
+        <p class="card-text">
+            <a href="{{ r['Wafilife Link'] }}" class="btn btn-primary btn-sm" target="_blank">Buy from WifiLife</a>
+        </p>
+        <p class="card-text">
+            <strong>Price in Rokomari:</strong>
+            {% if r['Rokomari Link'] != 'Not available' %}
+                {{ r['Price in Rokomari'] }}
+                <a href="{{ r['Rokomari Link'] }}" class="btn btn-secondary btn-sm" target="_blank">Buy from Rokomari</a>
+            {% else %}
+                Not available
+            {% endif %}
+        </p>
+    </div>
+</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

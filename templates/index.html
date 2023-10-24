@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Prices Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Add some basic styling for better presentation */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .profile img {
+            max-width: 100px;
+            margin-right: 20px;
+            border-radius: 50%;
+        }
+        .social-links a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+    <h1>Book Prices Checker</h1>
+    <div class="search-section">
+    <form action="/search" method="post">
+        <input type="text" name="bookname" placeholder="Enter book name..." required>
+        <button type="submit">Search</button>
+    </form>
+    </div>
+
+    <!-- Owner's details -->
+ <div class="profile">
+    <img src="{{ url_for('static', filename='img/image.jpg') }}" alt="Gazi Faysal Jubayer's Photo">
+    <div>
+        <strong>Name:</strong> Gazi Faysal Jubayer<br>
+        <strong>Education:</strong> Mechanical Engineering, Khulna University of Engineering and Technology<br>
+        <div class="social-links">
+            <a href="https://www.facebook.com/faysal.jubayer" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+            <a href="https://www.linkedin.com/in/gazi-faysal-jubayer" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/Ju_ba_313" target="_blank"><i class="fab fa-twitter"></i> Twitter</a>
+            <a href="https://github.com/gazi-faysal-jubayer" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+    </div>
+</div>
+    </div>
+
+</body>
+</html>

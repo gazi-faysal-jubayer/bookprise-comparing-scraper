@@ -1,0 +1,170 @@
+/* style.css content */
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #444;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    border-top: 1px solid #e7e7e7;
+    padding-top: 20px;
+}
+
+.profile img {
+    max-width: 100px;
+    margin-right: 20px;
+    border-radius: 50%;
+}
+
+.social-links a {
+    display: inline-block;
+    margin-right: 10px;
+    text-decoration: none;
+    color: #666;
+    transition: color 0.3s;
+}
+
+.social-links a:hover {
+    color: #444;
+}
+
+button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.search-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+input[type="text"] {
+    width: 70%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px 0 0 5px; /* rounded left side */
+    font-size: 16px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 0 5px 5px 0; /* rounded right side */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    background-color: #007BFF;
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.profile div {
+    flex: 1;
+}
+
+.social-links a {
+    display: inline-block;
+    margin-right: 15px;
+    text-decoration: none;
+    color: #666;
+    transition: color 0.3s;
+    font-size: 18px;
+}
+
+.social-links i {
+    margin-right: 5px;
+}
+
+.social-links a:hover {
+    color: #007BFF;
+}
+
+/* Results Page Styles */
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;  /* added */
+}
+
+.card-body {
+    flex: 1 1 auto;  /* added */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;  /* ensures that the card content is spaced out evenly */
+}
+
+.card-footer {
+    background-color: inherit;
+    border-top: none;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card-img-top {
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.card-title {
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: #007BFF;
+    border-color: #007BFF;
+}
+
+.btn-secondary {
+    background-color: #6C757D;
+    border-color: #6C757D;
+}
