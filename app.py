@@ -42,8 +42,8 @@ def search():
         wafi_link_list.append(link.a['href'])
 
     for i in range(len(book_name_list)):
-        rokomari = requests.get(f'https://www.rokomari.com/search?term={book_name_list[i]}&search_type=ALL').text
-        time.sleep(5)
+        rokoBook = book_name_list[i].replace(' ','+')
+        rokomari = requests.get(f'https://www.rokomari.com/search?term={rokoBook}&search_type=ALL').text
         soupR = BeautifulSoup(rokomari, 'lxml')
         rBooks = soupR.find_all('div', class_='book-list-wrapper')
         rWritters = soupR.find_all('p', class_='book-author')
