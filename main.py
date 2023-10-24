@@ -34,7 +34,6 @@ for link in wafi_links:
 
 
 for i in range(len(book_name_list)):
-    headers = {
     rokomari = requests.get(f'https://www.rokomari.com/search?term={book_name_list[i]}&search_type=ALL').text
     soupR = BeautifulSoup(rokomari, 'lxml')
     rBooks = soupR.find_all('div', class_='book-list-wrapper')
