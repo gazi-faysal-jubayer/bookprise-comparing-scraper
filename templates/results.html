@@ -29,14 +29,16 @@
                         <p class="card-text">
                             <strong>Price in WifiLife:</strong> {{ r['Price in WifiLife'] }}
                         </p>
-                    </div>
-                    <div class="card-footer">
                         <p class="card-text">
                             <a href="{{ r['Wafilife Link'] }}" class="btn btn-primary btn-sm" target="_blank">Buy from
                                 WifiLife</a>
                         </p>
+                    </div>
+                    <div class="card-footer">                        
                         <p class="card-text">
-                            <strong>Price in Rokomari:</strong>
+                            <strong>Price in Rokomari:</strong>{{ r['Price in Rokomari'] }}
+                        </p>
+                        <p class="card-text">
                             {% if r['Rokomari Link'] != 'Not available' %} {{ r['Price in
                             Rokomari'] }}
                             <a href="{{ r['Rokomari Link'] }}" class="btn btn-secondary btn-sm" target="_blank">Buy from
