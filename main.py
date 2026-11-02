@@ -1,104 +1,213 @@
-from bs4 import BeautifulSoup
+import sys
+import re
 import requests
+from bs4 import BeautifulSoup
+from difflib import SequenceMatcher
+from urllib.parse import urljoin, quote
+from concurrent.futures import ThreadPoolExecutor
 
-x = input("Input a book name you want to search: ")
-print("Searching.......")
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
-final = []
-
-wafi = requests.get(f'https://www.wafilife.com/search/?wpsolr_q={x}').text
-soup = BeautifulSoup(wafi, 'lxml')
-book_names = soup.find_all('h3', class_='heading-title product-title')
-writers = soup.find_all('div', class_='wd_product_categories')
-wafi_prices = soup.find_all('span', class_='price')
-images = soup.find_all('div', class_='product-image-front')
-wafi_links = soup.find_all('div', class_='product_thumbnail_wrapper')
-book_name_list = []
-writer_list = []
-image_list = []
-wafi_price_list = []
-wafi_link_list = []
-rokomari_price_list = []
-rokomari_Link_list = []
-for book in book_names:
-    book_name_list.append(book.text.strip())
-for writer in writers:
-    writer_list.append(writer.text.strip())
-for image in images:
-    image_list.append(image.img['src'])
-for price in wafi_prices:
-    p = price.span.text
-    wafi_price_list.append(p)
-for link in wafi_links:
-    wafi_link_list.append(link.a['href'])
+HEADERS = {
+    'User-Agent': (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    ),
+    'Accept': 'application/json, text/plain, */*',
+    'Referer': 'https://www.wafilife.com/'
+}
 
 
-for i in range(len(book_name_list)):
-    rokomari = requests.get(f'https://www.rokomari.com/search?term={book_name_list[i]}&search_type=ALL').text
-    soupR = BeautifulSoup(rokomari, 'lxml')
-    rBooks = soupR.find_all('div', class_='book-list-wrapper')
-    rWritters = soupR.find_all('p', class_='book-author')
-    rPrices = soupR.find_all('p', class_='book-price')
-    rLinks = soupR.find_all('div', class_='books-wrapper__item')
-    rBookList = []
-    rWriterList = []
-    rPriceList = []
-    rLinkList = []
-    for rB in rBooks:
-        rBookList.append(rB.h4.text)
-    for rW in rWritters:
-        rWriterList.append(rW.text)
-    for rP in rPrices:
-        rPriceList.append(rP.text.split()[-1] + '৳')
-    for rlink in rLinks:
-        rLinkList.append('https://www.rokomari.com' + rlink.a['href'])
-
-    key = 0
-    for j in range(len(rBookList)):
-        rBookList_replaced = rBookList[j].replace("ী", "ি").replace("ূ", "ু")
-        book_name_list_replaced = book_name_list[i].replace("ী", "ি").replace("ূ", "ু")
-        rWriterList_replaced = rWriterList[j].replace("ী", "ি").replace("ূ", "ু")
-        writer_list_replaced = writer_list[i].replace("ী", "ি").replace("ূ", "ু")
-        if rBookList_replaced in book_name_list_replaced or book_name_list_replaced in rBookList_replaced:
-            if rWriterList_replaced in writer_list_replaced or writer_list_replaced in rWriterList_replaced:
-                rokomari_price_list.append(rPriceList[j])
-                rokomari_Link_list.append(rLinkList[j])
-                key = 1
-                break
-    if key == 0:
-        rokomari_price_list.append('Not available')
-        rokomari_Link_list.append('Not available')
+def normalize_text(val):
+    if not val:
+        return ''
+    val = val.lower()
+    val = val.replace('ী', 'ি').replace('ূ', 'ু').replace('ণ', 'ন').replace('শ', 'স').replace('ষ', 'স')
+    val = re.sub(r'[^\w\s\u0980-\u09FF]', ' ', val)
+    return ' '.join(val.split())
 
 
-    print(f'Sl no: {i+1}')
-    print(f'Book name: {book_name_list[i]}')
-    print(f'Writer: {writer_list[i]}')
-    print(f'Image: {image_list[i]}')
-    print(f'Price in WifiLife: {wafi_price_list[i]}')
-    print(f'Wafilife Link: {wafi_link_list[i]}')
-    print(f'Price in Rokomari: {rokomari_price_list[i]}')
-    print(f'Rokomari Link: {rokomari_Link_list[i]}')
-
-    final_result ={
-        'Sl no': i + 1,
-        'Book name': book_name_list[i],
-        'Writer': writer_list[i],
-        'Image': image_list[i],
-        'Price in WifiLife': wafi_price_list[i],
-        'Wafilife Link': wafi_link_list[i],
-        'Price in Rokomari': rokomari_price_list[i],
-        'Rokomari Link': rokomari_Link_list[i]
-    }
-
-    final.append(final_result)
-
-    # print(final_result)
-
-print(final)
+def similarity(a, b):
+    na, nb = normalize_text(a), normalize_text(b)
+    if not na or not nb:
+        return 0.0
+    if na == nb:
+        return 1.0
+    return SequenceMatcher(None, na, nb).ratio()
 
 
+def search_wafilife(query):
+    url = f"https://www.wafilife.com/api/search?keyword={quote(query)}"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code != 200:
+            return []
+        data = res.json()
+        items = data.get('items', [])
+        books = []
+        for it in items:
+            item_id = str(it.get('id', ''))
+            if item_id.startswith(('wri_', 'pub_', 'sub_')) or not it.get('name'):
+                continue
+
+            name = it.get('name', '').strip()
+            authors = ', '.join(it.get('authors', [])).strip()
+
+            price_field = it.get('sale_price')
+            if isinstance(price_field, list) and price_field:
+                price_val = price_field[0]
+            else:
+                price_val = it.get('price')
+
+            price_str = f"{int(price_val)}৳" if price_val else "Price unavailable"
+            slug = it.get('slug', '')
+            link = f"https://www.wafilife.com/{slug}/pd/{item_id}" if slug and item_id else "Not available"
+            img = it.get('image', {}).get('original') or it.get('image', {}).get('thumbnail') or ""
+
+            books.append({
+                'title': name,
+                'author': authors,
+                'price': price_str,
+                'link': link,
+                'image': img
+            })
+        return books
+    except Exception as exc:
+        print(f"Error fetching Wafilife: {exc}")
+        return []
 
 
+def search_rokomari(query):
+    url = f"https://www.rokomari.com/search?term={quote(query)}&search_type=ALL"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code != 200:
+            return []
+        soup = BeautifulSoup(res.text, 'html.parser')
+        items = soup.find_all(lambda tag: tag.name == 'div' and any('productGridItem' in c for c in tag.get('class', [])))
+        books = []
+        for item in items:
+            title_el = item.find('p', class_=lambda c: c and 'productTitle' in c)
+            author_el = item.find('p', class_=lambda c: c and 'productAuthor' in c)
+            price_el = item.find('p', class_=lambda c: c and 'productPrice' in c)
+            link_el = item.find('a', href=lambda h: h and '/book/' in h)
+            img_el = item.find('img')
+
+            title = title_el.text.strip() if title_el else ''
+            author = author_el.text.strip() if author_el else ''
+            price = price_el.text.strip() if price_el else 'Not available'
+            link = urljoin('https://www.rokomari.com', link_el['href']) if link_el else 'Not available'
+            img = img_el.get('data-src') or img_el.get('src') if img_el else ''
+
+            if title:
+                books.append({
+                    'title': title,
+                    'author': author,
+                    'price': price,
+                    'link': link,
+                    'image': img
+                })
+        return books
+    except Exception as exc:
+        print(f"Error fetching Rokomari: {exc}")
+        return []
 
 
+def match_book_in_rokomari(wb):
+    r_books = search_rokomari(wb['title'])
+    best_match = None
+    best_score = 0.0
 
+    for rb in r_books:
+        t_score = similarity(wb['title'], rb['title'])
+        if wb['author'] and rb['author']:
+            a_score = similarity(wb['author'], rb['author'])
+            total_score = 0.75 * t_score + 0.25 * a_score
+        else:
+            total_score = t_score
+
+        if total_score > best_score:
+            best_score = total_score
+            best_match = rb
+
+    if best_match and best_score >= 0.65:
+        return best_match['price'], best_match['link']
+    return 'Not available', 'Not available'
+
+
+def main():
+    if len(sys.argv) > 1:
+        x = " ".join(sys.argv[1:]).strip()
+        print(f"Input a book name you want to search: {x}")
+    else:
+        x = input("Input a book name you want to search: ").strip()
+
+    if not x:
+        print("Please enter a valid book name.")
+        return
+
+    print("Searching.......", flush=True)
+
+    final = []
+    wafi_books = search_wafilife(x)[:10]
+
+    if wafi_books:
+        # Fetch Rokomari matching concurrently for high speed
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            roko_results = list(executor.map(match_book_in_rokomari, wafi_books))
+
+        for i, (wb, (roko_price, roko_link)) in enumerate(zip(wafi_books, roko_results)):
+            print(f"Sl no: {i+1}")
+            print(f"Book name: {wb['title']}")
+            print(f"Writer: {wb['author']}")
+            print(f"Image: {wb['image']}")
+            print(f"Price in WifiLife: {wb['price']}")
+            print(f"Wafilife Link: {wb['link']}")
+            print(f"Price in Rokomari: {roko_price}")
+            print(f"Rokomari Link: {roko_link}")
+            print('-' * 40, flush=True)
+
+            final_result = {
+                'Sl no': i + 1,
+                'Book name': wb['title'],
+                'Writer': wb['author'],
+                'Image': wb['image'],
+                'Price in WifiLife': wb['price'],
+                'Wafilife Link': wb['link'],
+                'Price in Rokomari': roko_price,
+                'Rokomari Link': roko_link
+            }
+            final.append(final_result)
+    else:
+        roko_books = search_rokomari(x)[:10]
+        for i, rb in enumerate(roko_books):
+            print(f"Sl no: {i+1}")
+            print(f"Book name: {rb['title']}")
+            print(f"Writer: {rb['author']}")
+            print(f"Image: {rb['image']}")
+            print("Price in WifiLife: Not available")
+            print("Wafilife Link: Not available")
+            print(f"Price in Rokomari: {rb['price']}")
+            print(f"Rokomari Link: {rb['link']}")
+            print('-' * 40, flush=True)
+
+            final_result = {
+                'Sl no': i + 1,
+                'Book name': rb['title'],
+                'Writer': rb['author'],
+                'Image': rb['image'],
+                'Price in WifiLife': 'Not available',
+                'Wafilife Link': 'Not available',
+                'Price in Rokomari': rb['price'],
+                'Rokomari Link': rb['link']
+            }
+            final.append(final_result)
+
+    print(final, flush=True)
+
+
+if __name__ == '__main__':
+    main()
