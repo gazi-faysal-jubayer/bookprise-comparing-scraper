@@ -4,52 +4,96 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Book Prices Checker</title>
+    <title>Book Prices Checker - Results</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+        .card-img-top {
+            height: 240px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            padding: 10px;
+        }
+        .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .card-body {
+            flex: 1 1 auto;
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            min-height: 2.8rem;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Search Results</h1>
-        <button onclick="window.location.href='/'" class="btn btn-primary mb-5">
-            Back to Search
-        </button>
+        <h1 class="text-center mb-3">Book Price Comparison Results</h1>
+        {% if bookname %}
+        <p class="text-center text-muted mb-4">Showing results for: <strong>{{ bookname }}</strong></p>
+        {% endif %}
+        <div class="text-center mb-4">
+            <button onclick="window.location.href='/'" class="btn btn-primary">
+                &larr; Back to Search
+            </button>
+        </div>
 
+        {% if not results %}
+        <div class="alert alert-warning text-center" role="alert">
+            No matching books found. Please try searching with another keyword.
+        </div>
+        {% else %}
         <div class="row">
             {% for r in results %}
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <img class="card-img-top" src="{{ r['Image'] }}" alt="Book Image" />
+                    {% if r['Image'] %}
+                    <img class="card-img-top" src="{{ r['Image'] }}" alt="{{ r['Book name'] }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/image.jpg') }}';" />
+                    {% else %}
+                    <img class="card-img-top" src="{{ url_for('static', filename='img/image.jpg') }}" alt="Placeholder" />
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ r['Book name'] }}</h5>
-                        <p class="card-text">
-                            <strong>Writer:</strong> {{ r['Writer'] }}
+                        <p class="card-text mb-2">
+                            <strong>Writer:</strong> {{ r['Writer'] if r['Writer'] else 'N/A' }}
+                        </p>
+                        <p class="card-text mb-2">
+                            <strong>Price in Wafilife:</strong>
+                            <span class="badge badge-success" style="font-size: 0.95rem;">{{ r['Price in WifiLife'] }}</span>
                         </p>
                         <p class="card-text">
-                            <strong>Price in WifiLife:</strong> {{ r['Price in WifiLife'] }}
-                        </p>
-                        <p class="card-text">
-                            <a href="{{ r['Wafilife Link'] }}" class="btn btn-primary btn-sm" target="_blank">Buy from
-                                WifiLife</a>
+                            {% if r['Wafilife Link'] != 'Not available' %}
+                            <a href="{{ r['Wafilife Link'] }}" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Buy from Wafilife</a>
+                            {% else %}
+                            <span class="text-muted small">Not available in Wafilife</span>
+                            {% endif %}
                         </p>
                     </div>
-                    <div class="card-footer">                        
-                        <p class="card-text">
-                            <strong>Price in Rokomari:</strong>{{ r['Price in Rokomari'] }}
+                    <div class="card-footer bg-white border-top">                        
+                        <p class="card-text mb-2">
+                            <strong>Price in Rokomari:</strong>
+                            <span class="badge badge-info" style="font-size: 0.95rem;">{{ r['Price in Rokomari'] }}</span>
                         </p>
                         <p class="card-text">
-                            {% if r['Rokomari Link'] != 'Not available' %} {{ r['Price in
-                            Rokomari'] }}
-                            <a href="{{ r['Rokomari Link'] }}" class="btn btn-secondary btn-sm" target="_blank">Buy from
-                                Rokomari</a>
-                            {% else %} Not available {% endif %}
+                            {% if r['Rokomari Link'] != 'Not available' %}
+                            <a href="{{ r['Rokomari Link'] }}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">Buy from Rokomari</a>
+                            {% else %}
+                            <span class="text-muted small">Not available in Rokomari</span>
+                            {% endif %}
                         </p>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
 </body>
 
